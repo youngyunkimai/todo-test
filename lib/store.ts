@@ -18,7 +18,7 @@ interface KanbanState {
   filters: FilterState;
 
   // Card CRUD
-  addCard: (columnId: ColumnId, title: string) => void;
+  addCard: (columnId: ColumnId, title: string, tags?: Tag[]) => void;
   updateCard: (id: string, changes: Partial<Omit<Card, "id">>) => void;
   deleteCard: (id: string) => void;
   moveCard: (cardId: string, targetColumnId: ColumnId, targetIndex: number) => void;
@@ -52,7 +52,7 @@ export const useKanbanStore = create<KanbanState>()(
         tagFilter: [],
       },
 
-      addCard: (columnId, title) => {
+      addCard: (columnId, title, tags) => {
         const cards = get().cards;
         const columnCards = cards.filter((c) => c.columnId === columnId);
         const newCard: Card = {
@@ -60,7 +60,7 @@ export const useKanbanStore = create<KanbanState>()(
           title,
           description: "",
           priority: "Medium",
-          tags: [],
+          tags: tags ?? [],
           dueDate: "",
           subtasks: [],
           columnId,

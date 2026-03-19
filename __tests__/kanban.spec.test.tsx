@@ -456,15 +456,14 @@ describe("KANBAN-018: 태그 필터 - 복수 (OR 조건)", () => {
     await userEvent.click(within(dialog).getByRole("button", { name: /bug/i }));
     await userEvent.click(within(dialog).getByRole("button", { name: /저장|save/i }));
 
+    // "기능" card: created with default Feature tag, no dialog edit needed
     await addCardViaUI("To Do", "기능");
-    await openCardDetail("기능");
-    dialog = screen.getByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: /feature/i }));
-    await userEvent.click(within(dialog).getByRole("button", { name: /저장|save/i }));
 
+    // "디자인" card: remove default Feature, add Design
     await addCardViaUI("To Do", "디자인");
     await openCardDetail("디자인");
     dialog = screen.getByRole("dialog");
+    await userEvent.click(within(dialog).getByRole("button", { name: /feature/i }));
     await userEvent.click(within(dialog).getByRole("button", { name: /design/i }));
     await userEvent.click(within(dialog).getByRole("button", { name: /저장|save/i }));
 
