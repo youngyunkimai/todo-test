@@ -1,0 +1,251 @@
+version: 1
+
+scenarios:
+  - id: "KANBAN-001"
+    name: "카드 생성 - 정상"
+    given: "'To Do' 칼럼이 표시된 칸반 보드"
+    when: "'To Do' 칼럼의 '추가' 버튼을 클릭하고 제목에 '장보기'를 입력한 뒤 저장한다"
+    then: "'To Do' 칼럼에 '장보기' 카드가 표시된다"
+    examples:
+      - input: { column: "To Do", title: "장보기" }
+        expect: { cardText: "장보기", column: "To Do" }
+
+  - id: "KANBAN-002"
+    name: "카드 생성 - 제목 미입력"
+    given: "카드 추가 폼이 열린 상태"
+    when: "제목을 비워둔 채 저장 버튼을 클릭한다"
+    then: "'제목을 입력해주세요' 오류 메시지가 표시된다"
+    examples:
+      - input: { title: "" }
+        expect: { errorMessage: "제목을 입력해주세요" }
+
+  - id: "KANBAN-003"
+    name: "카드 상세 보기"
+    given: "'장보기' 카드가 'To Do' 칼럼에 표시된 칸반 보드"
+    when: "'장보기' 카드를 클릭한다"
+    then: "상세 다이얼로그에 제목, 설명, 우선순위, 태그, 마감일, 서브태스크 필드가 표시된다"
+    examples:
+      - input: { cardTitle: "장보기" }
+        expect:
+          titleField: true
+          descriptionField: true
+          priorityField: true
+          tagField: true
+          dueDateField: true
+          subtaskField: true
+
+  - id: "KANBAN-004"
+    name: "카드 제목 편집"
+    given: "'장보기' 카드의 상세 다이얼로그가 열린 상태"
+    when: "제목을 '마트 장보기'로 수정하고 저장한다"
+    then: "보드에 '마트 장보기'로 표시된다"
+    examples:
+      - input: { oldTitle: "장보기", newTitle: "마트 장보기" }
+        expect: { cardText: "마트 장보기" }
+
+  - id: "KANBAN-005"
+    name: "카드 우선순위 변경"
+    given: "'장보기' 카드의 상세 다이얼로그가 열린 상태"
+    when: "우선순위를 'High'로 변경하고 저장한다"
+    then: "카드에 'High' 우선순위 배지가 표시된다"
+    examples:
+      - input: { priority: "High" }
+        expect: { priorityBadge: "High" }
+
+  - id: "KANBAN-006"
+    name: "카드 삭제 - 확인"
+    given: "'장보기' 카드의 상세 다이얼로그가 열린 상태에서 'To Do' 칼럼에 카드 3개"
+    when: "'삭제' 버튼을 클릭하고 확인한다"
+    then: "'장보기' 카드가 사라지고 'To Do' 칼럼에 카드 2개가 표시된다"
+    examples:
+      - input: { cardTitle: "장보기", confirm: true }
+        expect: { cardVisible: false, columnCardCount: 2 }
+
+  - id: "KANBAN-007"
+    name: "카드 삭제 - 취소"
+    given: "'장보기' 카드의 상세 다이얼로그가 열린 상태에서 'To Do' 칼럼에 카드 3개"
+    when: "'삭제' 버튼을 클릭하고 취소한다"
+    then: "'장보기' 카드가 그대로 유지되고 'To Do' 칼럼에 카드 3개가 표시된다"
+    examples:
+      - input: { cardTitle: "장보기", confirm: false }
+        expect: { cardVisible: true, columnCardCount: 3 }
+
+  - id: "KANBAN-008"
+    name: "서브태스크 추가"
+    given: "카드 상세 다이얼로그가 열린 상태"
+    when: "서브태스크 입력란에 '계란 사기'를 입력하고 추가한다"
+    then: "체크리스트에 '계란 사기' 항목이 표시된다"
+    examples:
+      - input: { subtaskTitle: "계란 사기" }
+        expect: { subtaskText: "계란 사기", subtaskChecked: false }
+
+  - id: "KANBAN-009"
+    name: "서브태스크 체크 - 진행률 표시"
+    given: "서브태스크 2개('계란 사기', '우유 사기')가 있는 카드 상세 다이얼로그"
+    when: "'계란 사기' 서브태스크를 체크한다"
+    then: "'1/2' 진행률이 표시된다"
+    examples:
+      - input: { checkSubtask: "계란 사기" }
+        expect: { progress: "1/2" }
+
+  - id: "KANBAN-010"
+    name: "서브태스크 추가 - 빈 내용"
+    given: "카드 상세 다이얼로그가 열린 상태"
+    when: "서브태스크 입력란을 비워둔 채 추가 버튼을 클릭한다"
+    then: "'내용을 입력해주세요' 오류 메시지가 표시된다"
+    examples:
+      - input: { subtaskTitle: "" }
+        expect: { errorMessage: "내용을 입력해주세요" }
+
+  - id: "KANBAN-011"
+    name: "칼럼 간 드래그&드롭"
+    given: "'To Do' 칼럼에 카드 3개, 'In Progress' 칼럼에 카드 0개가 표시된 칸반 보드"
+    when: "'To Do'의 첫 번째 카드를 'In Progress' 칼럼으로 드래그한다"
+    then: "'To Do' 칼럼에 카드 2개, 'In Progress' 칼럼에 카드 1개가 표시된다"
+    examples:
+      - input: { sourceColumn: "To Do", targetColumn: "In Progress", cardIndex: 0 }
+        expect: { toDoCount: 2, inProgressCount: 1 }
+
+  - id: "KANBAN-012"
+    name: "칼럼 내 순서 변경"
+    given: "'To Do' 칼럼에 카드 A, B, C 순서로 표시된 칸반 보드"
+    when: "카드 A를 카드 C 아래로 드래그한다"
+    then: "'To Do' 칼럼에 B, C, A 순서로 표시된다"
+    examples:
+      - input: { column: "To Do", fromIndex: 0, toIndex: 2 }
+        expect: { cardOrder: ["B", "C", "A"] }
+
+  - id: "KANBAN-013"
+    name: "제목 검색 - 매칭"
+    given: "'장보기', '회의' 카드가 있는 칸반 보드"
+    when: "검색창에 '장'을 입력한다"
+    then: "'장보기' 카드만 표시되고 '회의' 카드는 숨겨진다"
+    examples:
+      - input: { searchKeyword: "장" }
+        expect: { visibleCards: ["장보기"], hiddenCards: ["회의"] }
+
+  - id: "KANBAN-014"
+    name: "제목 검색 - 검색어 삭제"
+    given: "검색어 '장'이 입력되어 필터링된 상태"
+    when: "검색어를 모두 삭제한다"
+    then: "모든 카드가 다시 표시된다"
+    examples:
+      - input: { searchKeyword: "" }
+        expect: { allCardsVisible: true }
+
+  - id: "KANBAN-015"
+    name: "우선순위 필터"
+    given: "High 카드 1개, Medium 카드 2개가 있는 칸반 보드"
+    when: "우선순위 필터에서 'High'를 선택한다"
+    then: "High 우선순위 카드만 표시된다"
+    examples:
+      - input: { priorityFilter: "High" }
+        expect: { visibleCardCount: 1 }
+
+  - id: "KANBAN-016"
+    name: "우선순위 필터 해제"
+    given: "'High' 필터가 적용된 상태에서 전체 카드 3개"
+    when: "필터를 해제한다"
+    then: "모든 카드가 표시된다"
+    examples:
+      - input: { priorityFilter: null }
+        expect: { visibleCardCount: 3 }
+
+  - id: "KANBAN-017"
+    name: "태그 필터 - 단일"
+    given: "Bug 태그 카드 2개, Feature 태그 카드 1개가 있는 칸반 보드"
+    when: "태그 필터에서 'Bug'를 선택한다"
+    then: "Bug 태그가 있는 카드 2개만 표시된다"
+    examples:
+      - input: { tagFilter: ["Bug"] }
+        expect: { visibleCardCount: 2 }
+
+  - id: "KANBAN-018"
+    name: "태그 필터 - 복수 (OR 조건)"
+    given: "Bug 태그 카드 2개, Feature 태그 카드 1개, Design 태그 카드 1개가 있는 칸반 보드"
+    when: "태그 필터에서 'Bug'와 'Feature'를 선택한다"
+    then: "Bug 또는 Feature 태그가 있는 카드 3개가 표시된다"
+    examples:
+      - input: { tagFilter: ["Bug", "Feature"] }
+        expect: { visibleCardCount: 3 }
+
+  - id: "KANBAN-019"
+    name: "다크모드 토글 - 라이트에서 다크"
+    given: "라이트 모드가 적용된 앱"
+    when: "다크모드 토글을 클릭한다"
+    then: "다크 모드가 적용된다"
+    examples:
+      - input: { toggleDarkMode: true }
+        expect: { darkMode: true }
+
+  - id: "KANBAN-020"
+    name: "다크모드 토글 - 다크에서 라이트"
+    given: "다크 모드가 적용된 앱"
+    when: "다크모드 토글을 클릭한다"
+    then: "라이트 모드가 적용된다"
+    examples:
+      - input: { toggleDarkMode: true }
+        expect: { darkMode: false }
+
+  - id: "KANBAN-021"
+    name: "localStorage 저장 - 카드 복원"
+    given: "'장보기' 카드가 추가된 칸반 보드"
+    when: "페이지를 새로고침한다"
+    then: "'장보기' 카드가 그대로 표시된다"
+    examples:
+      - input: { reload: true }
+        expect: { cardText: "장보기", visible: true }
+
+  - id: "KANBAN-022"
+    name: "localStorage 저장 - 다크모드 복원"
+    given: "다크 모드가 적용된 상태"
+    when: "페이지를 새로고침한다"
+    then: "다크 모드가 유지된다"
+    examples:
+      - input: { reload: true }
+        expect: { darkMode: true }
+
+  - id: "KANBAN-023"
+    name: "검색과 필터 동시 적용"
+    given: "High 우선순위 '장보기' 카드, High 우선순위 '회의' 카드, Low 우선순위 '장보기2' 카드가 있는 칸반 보드"
+    when: "검색창에 '장'을 입력하고 우선순위 필터에서 'High'를 선택한다"
+    then: "High 우선순위이면서 제목에 '장'이 포함된 카드 1개만 표시된다"
+    examples:
+      - input: { searchKeyword: "장", priorityFilter: "High" }
+        expect: { visibleCards: ["장보기"], hiddenCards: ["회의", "장보기2"] }
+
+  - id: "KANBAN-024"
+    name: "빈 칼럼으로 카드 이동"
+    given: "'In Progress' 칼럼에 카드 1개, 'Done' 칼럼에 카드 0개가 표시된 칸반 보드"
+    when: "'In Progress'의 카드를 'Done' 칼럼으로 드래그한다"
+    then: "'In Progress' 칼럼에 카드 0개, 'Done' 칼럼에 카드 1개가 표시된다"
+    examples:
+      - input: { sourceColumn: "In Progress", targetColumn: "Done", cardIndex: 0 }
+        expect: { inProgressCount: 0, doneCount: 1 }
+
+  - id: "KANBAN-025"
+    name: "서브태스크 체크 해제 - 진행률 감소"
+    given: "서브태스크 2개 중 1개가 체크되어 '1/2' 진행률이 표시된 카드 상세 다이얼로그"
+    when: "체크된 서브태스크를 다시 클릭하여 체크를 해제한다"
+    then: "'0/2' 진행률이 표시된다"
+    examples:
+      - input: { uncheckSubtask: "계란 사기" }
+        expect: { progress: "0/2" }
+
+  - id: "KANBAN-026"
+    name: "태그 필터 해제"
+    given: "'Bug' 태그 필터가 적용된 상태에서 전체 카드 4개"
+    when: "'Bug' 태그 필터를 해제한다"
+    then: "모든 카드 4개가 표시된다"
+    examples:
+      - input: { tagFilter: [] }
+        expect: { visibleCardCount: 4 }
+
+  - id: "KANBAN-027"
+    name: "localStorage 저장 - 카드 이동 위치 복원"
+    given: "'장보기' 카드를 'To Do'에서 'In Progress'로 이동한 칸반 보드"
+    when: "페이지를 새로고침한다"
+    then: "'장보기' 카드가 'In Progress' 칼럼에 표시된다"
+    examples:
+      - input: { reload: true }
+        expect: { cardText: "장보기", column: "In Progress" }
